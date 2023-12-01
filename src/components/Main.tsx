@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, MouseEvent } from "react";
-import { Link } from "react-router-dom";
+import AuthForm from "./form/AuthForm";
 
 interface FieldValues {
   name: string;
@@ -20,14 +20,13 @@ const Main: React.FC = () => {
     setValues({ ...values, [name]: value });
   };
 
-  const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
+  const handleClick = () => {
     setError('')
     const isAnyFieldEmpty = Object.values(values).some((value) => !value);
 
 
     if (isAnyFieldEmpty) {
       setError('Please fill in all fields')
-      e.preventDefault();
     }
   };
 
@@ -36,42 +35,7 @@ const Main: React.FC = () => {
       <div className="bg-gray-800 p-8 rounded-lg">
         <h1 className="text-3xl font-semibold text-white mb-6">Join</h1>
 
-        <form className="flex flex-col gap-3">
-          <div className="min-w-[320px] rounded-lg h-12 overflow-hidden">
-            <input
-              type="text"
-              name="name"
-              value={values.name}
-              placeholder="Username"
-              className="w-full h-full bg-gray-700 text-white pl-5 text-base"
-              onChange={handleChange}
-              autoComplete="off"
-              required
-            />
-          </div>
-          <div className="min-w-[320px] rounded-lg h-12 overflow-hidden">
-            <input
-              type="text"
-              name="room"
-              placeholder="Room"
-              value={values.room}
-              className="w-full h-full bg-gray-700 text-white pl-5 text-base"
-              onChange={handleChange}
-              autoComplete="off"
-              required
-            />
-          </div>
-          {error && <div className='text-red-500'>{error}</div>}
-          <Link
-            className="min-w-[320px] rounded-lg h-12 overflow-hidden"
-            onClick={handleClick}
-            to={`/chat?name=${values.name}&room=${values.room}`}
-          >
-            <button type="submit" className="w-full h-full bg-blue-600 text-white text-base font-semibold">
-              Sign In
-            </button>
-          </Link>
-        </form>
+        <AuthForm error={error} name={values.name} room={values.room} handleChange={handleChange} handleClick={handleClick}/>
       </div>
     </div>
   );
