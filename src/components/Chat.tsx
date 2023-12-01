@@ -16,34 +16,52 @@ const Chat: FC = () => {
     reconnection: true,
     rejectUnauthorized: false
   }
-  const ioSocket = io('http://localhost:5000', securityOptions);
+  const [ioSocket] = useState(() => io('http://localhost:5000', securityOptions));
+
   const navigate = useNavigate();
   const { search } = useLocation()
   const [params, setParams] = useState<ParamsState>({});
   const [state, setState] = useState<messageData[]>([]);
   const [message, setMessage] = useState('');
+  const [disconnect, setDisconnect] = useState(false)
   const [users, setUsers] = useState(0);
-
-
-  console.log(state)
 
   useEffect(() => {
     const searchParams = Object.fromEntries(new URLSearchParams(search));
-    setParams(searchParams as ParamsState)
+    setParams(searchParams)
     ioSocket.emit('join', searchParams)
-  }, [search]);
+  }, [search, ioSocket]);
+
 
   useEffect(() => {
     ioSocket.on("message", ({ data }) => {
       setState(prev => ([...prev, data]))
     })
-    ioSocket.on("room", ({ data: { users } }) => {
-      setUsers(users.length);
-    });
+
     ioSocket.on("messageHistory", ({ data: { messages } }) => {
       setState(prev => ([...prev, ...messages]));
     });
-  }, []);
+
+    ioSocket.on("connect", () => {
+      setDisconnect(false);
+    })
+
+    ioSocket.on("disconnect", ()=> {
+      setDisconnect(true)
+    })
+
+    ioSocket.on("room", ({ data: { users } }) => {
+      setUsers(users.length);
+    });
+
+    return () => {
+      ioSocket.off("message");
+      ioSocket.off("messageHistory");
+      ioSocket.off("connect");
+      ioSocket.off("disconnect");
+      ioSocket.off("room");
+    };
+  }, [ioSocket]);
 
 
 
@@ -97,9 +115,15 @@ const Chat: FC = () => {
           />
         </div>
 
-        <div className="flex items-center">
-          <button type="submit" className="bg-blue-600 text-white py-2 px-4 rounded cursor-pointer" >Send a message</button>
-        </div>
+        <button
+            type="submit"
+            className={`py-2 px-4 rounded cursor-pointer ${
+                disconnect ? 'bg-gray-400 text-gray-600' : 'bg-blue-600 text-white'
+            }`}
+            disabled={disconnect}
+        >
+          Send a message
+        </button>
       </form>
     </div>
   )

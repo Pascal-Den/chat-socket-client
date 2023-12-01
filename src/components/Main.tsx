@@ -13,6 +13,7 @@ const Main: React.FC = () => {
   };
 
   const [values, setValues] = useState<FieldValues>(initialFieldValues);
+  const [error, setError] = useState<string>("");
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { value, name } = e.target;
@@ -20,9 +21,12 @@ const Main: React.FC = () => {
   };
 
   const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
+    setError('')
     const isAnyFieldEmpty = Object.values(values).some((value) => !value);
 
+
     if (isAnyFieldEmpty) {
+      setError('Please fill in all fields')
       e.preventDefault();
     }
   };
@@ -57,7 +61,7 @@ const Main: React.FC = () => {
               required
             />
           </div>
-
+          {error && <div className='text-red-500'>{error}</div>}
           <Link
             className="min-w-[320px] rounded-lg h-12 overflow-hidden"
             onClick={handleClick}
